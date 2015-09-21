@@ -28,6 +28,7 @@ LOCAL_SHARED_LIBRARIES        := libsdmcore libqservice libbinder libhardware li
                                  libdisplaydebug \
                                  hardware.google.light@1.0 \
                                  libdrm.vendor \
+                                 libbfqio \
 
 LOCAL_STATIC_LIBRARIES        := libhistogram
 

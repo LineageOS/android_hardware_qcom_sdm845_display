@@ -21,6 +21,7 @@
 #include <binder/Parcel.h>
 #include <core/buffer_allocator.h>
 #include <cutils/properties.h>
+#include <bfqio/bfqio.h>
 #include <display_config.h>
 #include <hardware_legacy/uevent.h>
 #include <private/color_params.h>
@@ -84,6 +85,7 @@ void HWCUEvent::UEventThread(HWCUEvent *hwc_uevent) {
 
   prctl(PR_SET_NAME, uevent_thread_name, 0, 0, 0);
   setpriority(PRIO_PROCESS, 0, HAL_PRIORITY_URGENT_DISPLAY);
+  android_set_rt_ioprio(0, 1);
 
   int status = uevent_init();
   if (!status) {
