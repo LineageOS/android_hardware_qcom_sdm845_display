@@ -258,9 +258,11 @@ void HWDeviceDRM::Registry::Register(HWLayers *hw_layers) {
     LayerBuffer *input_buffer = &layer.input_buffer;
     HWRotatorSession *hw_rotator_session = &hw_layers->config[i].hw_rotator_session;
     HWRotateInfo *hw_rotate_info = &hw_rotator_session->hw_rotate_info[0];
+    fbid_cache_limit_ = input_buffer->flags.video ? VIDEO_FBID_LIMIT : UI_FBID_LIMIT;
 
     if (hw_rotator_session->mode == kRotatorOffline && hw_rotate_info->valid) {
       input_buffer = &hw_rotator_session->output_buffer;
+      fbid_cache_limit_ = ROTATOR_FBID_LIMIT;
     }
 
     MapBufferToFbId(&layer, input_buffer);
@@ -300,15 +302,20 @@ void HWDeviceDRM::Registry::MapBufferToFbId(Layer* layer, LayerBuffer* buffer) {
   }
 
   uint64_t handle_id = buffer->handle_id;
-
   if (!handle_id || disable_fbid_cache_) {
-    // Legacy: Remove & Create fb_id in each frame
+    // In legacy path, clear fb_id map in each frame.
     layer->buffer_map->buffer_map.clear();
-  }
+  } else {
 
-  if (layer->buffer_map->buffer_map.find(handle_id) != layer->buffer_map->buffer_map.end()) {
-    // Found fb_id for given handle_id key
-    return;
+    if (layer->buffer_map->buffer_map.find(handle_id) != layer->buffer_map->buffer_map.end()) {
+      // Found fb_id for given handle_id key
+      return;
+    }
+
+    if (layer->buffer_map->buffer_map.size() >= fbid_cache_limit_) {
+      // Clear fb_id map, if the size reaches cache limit.
+      layer->buffer_map->buffer_map.clear();
+    }
   }
 
   uint32_t fb_id = 0;
@@ -324,14 +331,19 @@ void HWDeviceDRM::Registry::MapOutputBufferToFbId(LayerBuffer *output_buffer) {
   }
 
   uint64_t handle_id = output_buffer->handle_id;
-
   if (!handle_id || disable_fbid_cache_) {
-    // Legacy: Remove & Create fb_id in each frame
+    // In legacy path, clear output buffer map in each frame.
     output_buffer_map_.clear();
-  }
+  } else {
 
-  if (output_buffer_map_.find(handle_id) != output_buffer_map_.end()) {
-    return;
+    if (output_buffer_map_.find(handle_id) != output_buffer_map_.end()) {
+      return;
+    }
+
+    if (output_buffer_map_.size() >= UI_FBID_LIMIT) {
+      // Clear output buffer map, if the size reaches cache limit.
+      output_buffer_map_.clear();
+    }
   }
 
   uint32_t fb_id = 0;
@@ -719,6 +731,7 @@ DisplayError HWDeviceDRM::SetDisplayAttributes(uint32_t index) {
   current_mode_index_ = index;
   PopulateHWPanelInfo();
   UpdateMixerAttributes();
+  update_mode_ = true;
 
   DLOGI("Display attributes[%d]: WxH: %dx%d, DPI: %fx%f, FPS: %d, LM_SPLIT: %d, V_BACK_PORCH: %d," \
         " V_FRONT_PORCH: %d, V_PULSE_WIDTH: %d, V_TOTAL: %d, H_TOTAL: %d, CLK: %dKHZ, TOPOLOGY: %d",
@@ -752,6 +765,7 @@ DisplayError HWDeviceDRM::PowerOn(int *release_fence) {
     return kErrorNone;
   }
 
+  update_mode_ = true;
   drm_atomic_intf_->Perform(DRMOps::CRTC_SET_ACTIVE, token_.crtc_id, 1);
   drm_atomic_intf_->Perform(DRMOps::CONNECTOR_SET_POWER_MODE, token_.conn_id, DRMPowerMode::ON);
   int ret = drm_atomic_intf_->Commit(true /* synchronous */, true /* retain_planes */);
@@ -990,7 +1004,11 @@ void HWDeviceDRM::SetupAtomic(HWLayers *hw_layers, bool validate) {
     drm_atomic_intf_->Perform(DRMOps::CONNECTOR_SET_POWER_MODE, token_.conn_id, DRMPowerMode::ON);
   }
 
-  drm_atomic_intf_->Perform(DRMOps::CRTC_SET_MODE, token_.crtc_id, &current_mode);
+  // Set CRTC mode, only if display config changes
+  if (vrefresh_ || first_cycle_ || update_mode_) {
+    drm_atomic_intf_->Perform(DRMOps::CRTC_SET_MODE, token_.crtc_id, &current_mode);
+  }
+
   drm_atomic_intf_->Perform(DRMOps::CRTC_SET_ACTIVE, token_.crtc_id, 1);
 
   if (!validate && (hw_layer_info.set_idle_time_ms >= 0)) {
@@ -1169,6 +1187,7 @@ DisplayError HWDeviceDRM::AtomicCommit(HWLayers *hw_layers) {
   }
 
   first_cycle_ = false;
+  update_mode_ = false;
 
   return kErrorNone;
 }
