@@ -372,6 +372,18 @@ HWC2::Error HWCDisplayPrimary::SetColorMode(ColorMode mode) {
   return SetColorModeWithRenderIntent(mode, RenderIntent::COLORIMETRIC);
 }
 
+HWC2::Error HWCDisplayPrimary::SetWhiteCompensation(bool enabled) {
+  auto status = color_mode_->SetWhiteCompensation(enabled);
+  if (status != HWC2::Error::None) {
+    DLOGE("failed for SetWhiteCompensation to %d", enabled);
+    return status;
+  }
+
+  callbacks_->Refresh(HWC_DISPLAY_PRIMARY);
+
+  return status;
+}
+
 HWC2::Error HWCDisplayPrimary::SetColorModeWithRenderIntent(ColorMode mode, RenderIntent intent) {
   auto status = color_mode_->SetColorModeWithRenderIntent(mode, intent);
   if (status != HWC2::Error::None) {
@@ -495,6 +507,28 @@ HWC2::Error HWCDisplayPrimary::PostCommitLayerStack(int32_t *out_retire_fence) {
     pmic_notification_pending_ = false;
   }
   return HWC2::Error::None;
+}
+
+DisplayError HWCDisplayPrimary::TeardownConcurrentWriteback(void) {
+  DisplayError error = kErrorNotSupported;
+
+  if (output_buffer_.release_fence_fd >= 0) {
+    int32_t release_fence_fd = dup(output_buffer_.release_fence_fd);
+    int ret = sync_wait(output_buffer_.release_fence_fd, 1000);
+    if (ret < 0) {
+      DLOGE("sync_wait error errno = %d, desc = %s", errno, strerror(errno));
+    }
+
+    ::close(release_fence_fd);
+    if (ret)
+      return kErrorResources;
+  }
+
+  if (display_intf_) {
+    error = display_intf_->TeardownConcurrentWriteback();
+  }
+
+  return error;
 }
 
 int HWCDisplayPrimary::Perform(uint32_t operation, ...) {

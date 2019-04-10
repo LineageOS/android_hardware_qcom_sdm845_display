@@ -1163,6 +1163,13 @@ HWC2::Error HWCSession::CreateVirtualDisplayObject(uint32_t width, uint32_t heig
       return HWC2::Error::NoResources;
     }
 
+    if (hwc_display_[HWC_DISPLAY_PRIMARY]) {
+      auto error = hwc_display_[HWC_DISPLAY_PRIMARY]->TeardownConcurrentWriteback();
+      if (error) {
+        return HWC2::Error::NoResources;
+      }
+    }
+
     auto status = HWCDisplayVirtual::Create(core_intf_, &buffer_allocator_, &callbacks_, width,
                                             height, format, &hwc_display_[HWC_DISPLAY_VIRTUAL]);
     // TODO(user): validate width and height support
@@ -1491,6 +1498,13 @@ android::status_t HWCSession::notifyCallback(uint32_t command, const android::Pa
       status = setColorSamplingEnabled(input_parcel);
       break;
 
+    case qService::IQService::SET_WHITE_COMPENSATION:
+      if (!input_parcel) {
+        DLOGE("QService command = %d: input_parcel needed.", command);
+        break;
+      }
+      status = SetWhiteCompensation(input_parcel);
+      break;
     default:
       DLOGW("QService command = %d is not supported.", command);
       break;
@@ -1700,6 +1714,18 @@ android::status_t HWCSession::SetColorModeOverride(const android::Parcel *input_
   }
 
   auto err = CallDisplayFunction(device, display, &HWCDisplay::SetColorMode, mode);
+  if (err != HWC2_ERROR_NONE)
+    return -EINVAL;
+
+  return 0;
+}
+
+android::status_t HWCSession::SetWhiteCompensation(const android::Parcel *input_parcel) {
+  auto display = static_cast<hwc2_display_t>(input_parcel->readInt32());
+  auto enabled = static_cast<bool>(input_parcel->readInt32());
+  auto device = static_cast<hwc2_device_t *>(this);
+
+  auto err = CallDisplayFunction(device, display, &HWCDisplay::SetWhiteCompensation, enabled);
   if (err != HWC2_ERROR_NONE)
     return -EINVAL;
 
