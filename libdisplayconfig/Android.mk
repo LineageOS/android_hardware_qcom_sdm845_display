@@ -2,6 +2,7 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE                  := libdisplayconfig
+LOCAL_SYSTEM_EXT_MODULE       := true
 LOCAL_MODULE_TAGS             := optional
 LOCAL_VENDOR_MODULE           := true
 LOCAL_HEADER_LIBRARIES        := display_headers
