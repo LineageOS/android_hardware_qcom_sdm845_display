@@ -16,6 +16,7 @@ LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 
 LOCAL_HEADER_LIBRARIES := display_headers
+LOCAL_HEADER_LIBRARIES += generated_kernel_headers
 LOCAL_MODULE := libhistogram
 LOCAL_SRC_FILES := histogram_collector.cpp ringbuffer.cpp
 LOCAL_SHARED_LIBRARIES := libdrm.vendor liblog libcutils libutils
