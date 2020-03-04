@@ -27,7 +27,7 @@ ifeq ($(LLVM_SA), true)
 endif
 LOCAL_CFLAGS += -Wno-error
 LOCAL_CLANG  := true
-LOCAL_MODULE := lights.$(TARGET_BOARD_PLATFORM)
+LOCAL_MODULE := lights.qcom
 LOCAL_MODULE_TAGS := optional
 LOCAL_VENDOR_MODULE := true
 
