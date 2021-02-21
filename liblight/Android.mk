@@ -28,6 +28,9 @@ endif
 LOCAL_CFLAGS += -Wno-error
 LOCAL_CLANG  := true
 LOCAL_MODULE := lights.qcom
+LOCAL_LICENSE_KINDS := SPDX-license-identifier-Apache-2.0 legacy_not_a_contribution
+LOCAL_LICENSE_CONDITIONS := by_exception_only not_allowed notice
+LOCAL_NOTICE_FILE := $(LOCAL_PATH)/NOTICE
 LOCAL_MODULE_TAGS := optional
 LOCAL_VENDOR_MODULE := true
 
