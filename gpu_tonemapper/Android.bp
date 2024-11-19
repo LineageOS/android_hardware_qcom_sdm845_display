@@ -1,0 +1,44 @@
+package {
+    // See: http://go/android-license-faq
+    // A large-scale-change added 'default_applicable_licenses' to import
+    // all of the 'license_kinds' from "hardware_qcom_sdm845_display_license"
+    // to get the below license kinds:
+    //   SPDX-license-identifier-Apache-2.0
+    //   SPDX-license-identifier-BSD
+    //   legacy_not_a_contribution
+    default_applicable_licenses: ["hardware_qcom_sdm845_display_license"],
+}
+
+cc_library_shared {
+    name: "libgpu_tonemapper",
+    vendor: true,
+
+    header_libs: [
+        "display_headers",
+        "qti_kernel_headers",
+    ],
+    shared_libs: [
+        "libEGL",
+        "libGLESv2",
+        "libGLESv3",
+        "libui",
+        "libutils",
+        "liblog",
+    ],
+
+    cflags: [
+        "-Wno-missing-field-initializers",
+        "-Wall",
+        "-Wno-unused-parameter",
+        "-DLOG_TAG=\"GPU_TONEMAPPER\"",
+    ],
+
+    srcs: [
+        "TonemapFactory.cpp",
+        "glengine.cpp",
+        "EGLImageBuffer.cpp",
+        "EGLImageWrapper.cpp",
+        "Tonemapper.cpp",
+    ],
+
+}
