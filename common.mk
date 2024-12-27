@@ -45,9 +45,7 @@ ifneq (,$(call is-board-platform-in-list2, $(MASTER_SIDE_CP_TARGET_LIST)))
     common_flags += -DMASTER_SIDE_CP
 endif
 
-use_hwc2 := false
 ifeq ($(TARGET_USES_HWC2), true)
-    use_hwc2 := true
     common_flags += -DVIDEO_MODE_DEFER_RETIRE_FENCE
 endif
 
