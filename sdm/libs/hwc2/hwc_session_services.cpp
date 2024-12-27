@@ -512,15 +512,13 @@ Return<void> HWCSession::displayBWTransactionPending(displayBWTransactionPending
 
   return Void();
 }
-#ifdef DISPLAY_CONFIG_1_1
+
 // Methods from ::vendor::hardware::display::config::V1_1::IDisplayConfig follow.
 Return<int32_t> HWCSession::setDisplayAnimating(uint64_t display_id, bool animating ) {
   return CallDisplayFunction(static_cast<hwc2_device_t *>(this), display_id,
                              &HWCDisplay::SetDisplayAnimating, animating);
 }
-#endif
 
-#ifdef DISPLAY_CONFIG_1_3
 Return<int32_t> HWCSession::controlIdlePowerCollapse(bool enable, bool synchronous) {
   SEQUENCE_WAIT_SCOPE_LOCK(locker_[HWC_DISPLAY_PRIMARY]);
 
@@ -558,6 +556,5 @@ Return<int32_t> HWCSession::controlIdlePowerCollapse(bool enable, bool synchrono
   DLOGW("Display = %d is not connected.", HWC_DISPLAY_PRIMARY);
   return -ENODEV;
 }
-#endif  // DISPLAY_CONFIG_1_3
 
 }  // namespace sdm

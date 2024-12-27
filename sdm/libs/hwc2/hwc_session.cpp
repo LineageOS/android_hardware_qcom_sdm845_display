@@ -2352,31 +2352,7 @@ android::status_t HWCSession::SetIdlePC(const android::Parcel *input_parcel) {
   auto enable = input_parcel->readInt32();
   auto synchronous = input_parcel->readInt32();
 
-#ifdef DISPLAY_CONFIG_1_3
   return static_cast<android::status_t>(controlIdlePowerCollapse(enable, synchronous));
-#else
-  {
-    SEQUENCE_WAIT_SCOPE_LOCK(locker_[HWC_DISPLAY_PRIMARY]);
-    if (hwc_display_[HWC_DISPLAY_PRIMARY]) {
-      DLOGE("Primary display is not ready");
-      return -EINVAL;
-    }
-    auto error = hwc_display_[HWC_DISPLAY_PRIMARY]->ControlIdlePowerCollapse(enable, synchronous);
-    if (error != HWC2::Error::None) {
-      return -EINVAL;
-    }
-    if (!enable) {
-      Refresh(HWC_DISPLAY_PRIMARY);
-      int32_t error = locker_[HWC_DISPLAY_PRIMARY].WaitFinite(kCommitDoneTimeoutMs);
-      if (error == ETIMEDOUT) {
-        DLOGE("Timed out!! Next frame commit done event not received!!");
-        return error;
-      }
-    }
-    DLOGI("Idle PC %s!!", enable ? "enabled" : "disabled");
-  }
-  return 0;
-#endif
 }
 
 }  // namespace sdm

@@ -20,16 +20,7 @@
 #ifndef __HWC_SESSION_H__
 #define __HWC_SESSION_H__
 
-#ifdef DISPLAY_CONFIG_1_3
 #include <vendor/display/config/1.3/IDisplayConfig.h>
-#elif DISPLAY_CONFIG_1_2
-#include <vendor/display/config/1.2/IDisplayConfig.h>
-#elif DISPLAY_CONFIG_1_1
-#include <vendor/display/config/1.1/IDisplayConfig.h>
-#else
-#include <vendor/display/config/1.0/IDisplayConfig.h>
-#endif
-
 #include <core/core_interface.h>
 #include <utils/locker.h>
 
@@ -44,15 +35,7 @@
 
 namespace sdm {
 
-#ifdef DISPLAY_CONFIG_1_3
 using vendor::display::config::V1_3::IDisplayConfig;
-#elif DISPLAY_CONFIG_1_2
-using vendor::display::config::V1_2::IDisplayConfig;
-#elif DISPLAY_CONFIG_1_1
-using vendor::display::config::V1_1::IDisplayConfig;
-#else
-using ::vendor::display::config::V1_0::IDisplayConfig;
-#endif
 using ::android::hardware::Return;
 
 // Create a singleton uevent listener thread valid for life of hardware composer process.
@@ -248,17 +231,11 @@ class HWCSession : hwc2_device_t, HWCUEventListener, IDisplayConfig, public qCli
                                   getHDRCapabilities_cb _hidl_cb) override;
   Return<int32_t> setCameraLaunchStatus(uint32_t on) override;
   Return<void> displayBWTransactionPending(displayBWTransactionPending_cb _hidl_cb) override;
-#ifdef DISPLAY_CONFIG_1_1
   Return<int32_t> setDisplayAnimating(uint64_t display_id, bool animating) override;
-#endif
   // Methods from ::android::hardware::display::config::V1_2::IDisplayConfig follow.
-#ifdef DISPLAY_CONFIG_1_2
   Return<int32_t> setDisplayIndex(IDisplayConfig::DisplayTypeExt disp_type,
                                   uint32_t base, uint32_t count)  { return 0; }
-#endif
-#ifdef DISPLAY_CONFIG_1_3
   Return<int32_t> controlIdlePowerCollapse(bool enable, bool synchronous) override;
-#endif
 
   // QClient methods
   virtual android::status_t notifyCallback(uint32_t command, const android::Parcel *input_parcel,
