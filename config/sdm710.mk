@@ -10,7 +10,7 @@ PRODUCT_PACKAGES += \
     modetest \
     gralloc.sdm710 \
     lights.sdm710 \
-    hwcomposer.sdm710 \
+    hwcomposer.qcom \
     libqdutils \
     libqdMetaData \
     libqdMetaData.system

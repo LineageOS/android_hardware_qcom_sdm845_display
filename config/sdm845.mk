@@ -10,7 +10,7 @@ PRODUCT_PACKAGES += \
     modetest \
     gralloc.sdm845 \
     lights.sdm845 \
-    hwcomposer.sdm845 \
+    hwcomposer.qcom \
     libqdutils \
     libqdMetaData \
     libqdMetaData.system
