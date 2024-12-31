@@ -1,3 +1,9 @@
+soong_namespace {
+    imports: [
+        "hardware/google/interfaces",
+    ],
+}
+
 package {
     default_applicable_licenses: ["hardware_qcom_sdm845_display_license"],
 }
@@ -34,7 +40,10 @@ cc_defaults {
         "-Wconversion",
         "-Wall",
         "-Werror",
-    ],
+    ] + select(soong_config_variable("qtidisplay", "headless"), {
+        "true": ["-DTARGET_HEADLESS"],
+        default: [],
+    }),
     shared_libs: [
         "liblog",
         "libcutils",
@@ -59,8 +68,14 @@ cc_library_headers {
         "libdebug",
         "libhistogram",
     ],
-    header_libs: ["libhardware_headers", "display_intf_headers"],
-    export_header_lib_headers: ["libhardware_headers", "display_intf_headers"],
+    header_libs: [
+        "libhardware_headers",
+        "display_intf_headers",
+    ],
+    export_header_lib_headers: [
+        "libhardware_headers",
+        "display_intf_headers",
+    ],
 }
 
 cc_library_headers {
@@ -75,10 +90,3 @@ cc_library_headers {
     header_libs: ["libhardware_headers"],
     export_header_lib_headers: ["libhardware_headers"],
 }
-
-subdirs = [
-    "gpu_tonemapper",
-    "gralloc",
-    "libqservice",
-    "libqdutils",
-]

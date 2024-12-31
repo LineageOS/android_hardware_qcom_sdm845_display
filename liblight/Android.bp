@@ -10,18 +10,18 @@ package {
 }
 
 cc_library_shared {
-
-    name: "libdisplaydebug",
-    defaults: ["display_defaults"],
+    name: "lights.qcom",
+    srcs: ["lights.c"],
+    relative_install_path: "hw",
+    header_libs: [
+        "libhardware_headers",
+        "qti_kernel_headers",
+    ],
+    shared_libs: [
+        "libcutils",
+        "liblog",
+    ],
+    cflags: ["-DLOG_TAG=\"qdlights\""],
     vendor: true,
 
-    shared_libs: ["libdl"],
-    cflags: [
-        "-DLOG_TAG=\"SDM\"",
-        "-Wall",
-        "-Werror",
-        "-fno-operator-names",
-    ],
-    export_include_dirs: ["."],
-    srcs: ["debug_handler.cpp"],
 }
