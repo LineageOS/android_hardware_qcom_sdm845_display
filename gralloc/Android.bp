@@ -1,32 +1,170 @@
 package {
+    // See: http://go/android-license-faq
+    // A large-scale-change added 'default_applicable_licenses' to import
+    // all of the 'license_kinds' from "hardware_qcom_sdm845_display_license"
+    // to get the below license kinds:
+    //   SPDX-license-identifier-Apache-2.0
+    //   SPDX-license-identifier-BSD
+    //   legacy_not_a_contribution
     default_applicable_licenses: ["hardware_qcom_sdm845_display_license"],
 }
 
+//libgrallocutils
 cc_library_shared {
     name: "libgrallocutils",
+    defaults: ["display_defaults"],
     vendor: true,
-    srcs: [
-        "gr_utils.cpp",
-        "gr_adreno_info.cpp",
+
+    header_libs: [
+        "display_headers",
+        "qti_kernel_headers",
+    ],
+    shared_libs: [
+        "libqdMetaData",
+        "libcutils",
+        "libdl",
+        "liblog",
+        "android.hardware.graphics.mapper@2.0",
+        "android.hardware.graphics.mapper@2.1",
     ],
     cflags: [
         "-DLOG_TAG=\"qdgralloc\"",
         "-Wno-sign-conversion",
     ],
-    shared_libs: [
-        "android.hardware.graphics.mapper@2.0",
-        "android.hardware.graphics.mapper@2.1",
-        "libcutils",
-        "libdl",
-        "liblog",
-        "//vendor/qcom/opensource/display:libqdMetaData",
+    srcs: [
+        "gr_utils.cpp",
+        "gr_adreno_info.cpp",
     ],
+}
+
+//libgralloccore
+cc_library_shared {
+    name: "libgralloccore",
+    defaults: ["display_defaults"],
+    vendor: true,
     header_libs: [
         "display_headers",
-        "device_kernel_headers",
+        "qti_kernel_headers",
     ],
-    export_header_lib_headers: [
-        "device_kernel_headers",
+    shared_libs: [
+        "libqdMetaData",
+        "libdl",
+        "libgrallocutils",
+        "android.hardware.graphics.mapper@2.1",
     ],
-    export_include_dirs: ["."],
+    cflags: [
+        "-DLOG_TAG=\"qdgralloc\"",
+        "-Wno-sign-conversion",
+    ] + select(soong_config_variable("qtidisplay", "target_uses_nv21_camera_preview"), {
+        "true": ["-DUSE_NV21_CAMERA_PREVIEW"],
+        default: [],
+    }),
+    srcs: [
+        "gr_allocator.cpp",
+        "gr_buf_mgr.cpp",
+        "gr_ion_alloc.cpp",
+    ],
+}
+
+//gralloc.qcom
+soong_config_module_type {
+    name: "target_board_platform_cc_library_shared",
+    module_type: "cc_library_shared",
+    config_namespace: "ANDROID",
+    value_variables: ["target_board_platform"],
+    properties: [
+        "name",
+    ],
+}
+
+target_board_platform_cc_library_shared {
+    name: "gralloc.qcom",
+    soong_config_variables: {
+        target_board_platform: {
+            name: "gralloc.%s",
+            conditions_default: {
+                name: "gralloc.qcom",
+            },
+        },
+    },
+    defaults: ["display_defaults"],
+    vendor: true,
+    relative_install_path: "hw",
+    header_libs: [
+        "display_headers",
+        "qti_kernel_headers",
+    ],
+    shared_libs: [
+        "libgralloccore",
+        "libgrallocutils",
+        "libqdMetaData",
+        "libsync",
+        "android.hardware.graphics.mapper@2.0",
+        "android.hardware.graphics.mapper@2.1",
+    ],
+    cflags: [
+        "-DLOG_TAG=\"qdgralloc\"",
+        "-Wall",
+        "-Werror",
+    ],
+    srcs: [
+        "gr_device_impl.cpp",
+    ],
+}
+
+//mapper
+cc_library_shared {
+    name: "android.hardware.graphics.mapper@2.0-impl-qti-display",
+    defaults: ["display_defaults"],
+    vendor: true,
+    relative_install_path: "hw",
+
+    header_libs: [
+        "display_headers",
+        "qti_kernel_headers",
+    ],
+    shared_libs: [
+        "libhidlbase",
+        "libqdMetaData",
+        "libgrallocutils",
+        "libgralloccore",
+        "libsync",
+        "android.hardware.graphics.mapper@2.0",
+        "android.hardware.graphics.mapper@2.1",
+    ],
+    cflags: [
+        "-DLOG_TAG=\"qdgralloc\"",
+        "-Wno-sign-conversion",
+    ],
+    srcs: [
+        "QtiMapper.cpp",
+    ],
+}
+
+//allocator
+cc_binary {
+    name: "vendor.qti.hardware.display.allocator@1.0-service",
+    defaults: ["display_defaults"],
+    vendor: true,
+    relative_install_path: "hw",
+    header_libs: [
+        "display_headers",
+        "qti_kernel_headers",
+    ],
+    shared_libs: [
+        "libhidlbase",
+        "libqdMetaData",
+        "libgrallocutils",
+        "libgralloccore",
+        "android.hardware.graphics.mapper@2.1",
+        "android.hardware.graphics.allocator@2.0",
+    ],
+    cflags: [
+        "-DLOG_TAG=\"qdgralloc\"",
+    ],
+    srcs: [
+        "QtiAllocator.cpp",
+        "service.cpp",
+    ],
+    init_rc: ["vendor.qti.hardware.display.allocator@1.0-service.rc"],
 }
