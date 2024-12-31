@@ -11,17 +11,26 @@ package {
 
 cc_library_shared {
 
-    name: "libdisplaydebug",
-    defaults: ["display_defaults"],
+    name: "hdmi_cec.qcom",
     vendor: true,
+    relative_install_path: "hw",
 
-    shared_libs: ["libdl"],
-    cflags: [
-        "-DLOG_TAG=\"SDM\"",
-        "-Wall",
-        "-Werror",
-        "-fno-operator-names",
+    header_libs: ["display_headers"],
+    shared_libs: [
+        "libqservice",
+        "liblog",
+        "libutils",
+        "libcutils",
+        "libbinder",
+        "libqdutils",
     ],
-    export_include_dirs: ["."],
-    srcs: ["debug_handler.cpp"],
+
+    cflags: [
+        "-DLOG_TAG=\"qdhdmi_cec\"",
+        "-Wno-sign-conversion",
+    ],
+    srcs: [
+        "qhdmi_cec.cpp",
+        "QHDMIClient.cpp",
+    ],
 }

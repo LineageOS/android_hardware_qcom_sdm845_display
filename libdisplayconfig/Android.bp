@@ -10,18 +10,14 @@ package {
 }
 
 cc_library_shared {
+    name: "libdisplayconfig",
 
-    name: "libdisplaydebug",
-    defaults: ["display_defaults"],
-    vendor: true,
-
-    shared_libs: ["libdl"],
-    cflags: [
-        "-DLOG_TAG=\"SDM\"",
-        "-Wall",
-        "-Werror",
-        "-fno-operator-names",
+    header_libs: ["display_headers"],
+    srcs: ["DisplayConfig.cpp"],
+    shared_libs: [
+        "libhidlbase",
+        "libutils",
+        "vendor.display.config@1.0",
     ],
     export_include_dirs: ["."],
-    srcs: ["debug_handler.cpp"],
 }
