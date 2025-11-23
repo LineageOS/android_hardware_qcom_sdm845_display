@@ -56,7 +56,7 @@ cc_library_shared {
         "-DLOG_TAG=\"qdgralloc\"",
         "-Wno-sign-conversion",
     ] + select(soong_config_variable("qtidisplay", "target_uses_nv21_camera_preview"), {
-        "true": ["-DUSE_NV21_CAMERA_PREVIEW"],
+        true: ["-DUSE_NV21_CAMERA_PREVIEW"],
         default: [],
     }),
     srcs: [

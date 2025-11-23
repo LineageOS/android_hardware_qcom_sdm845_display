@@ -41,7 +41,7 @@ cc_defaults {
         "-Wall",
         "-Werror",
     ] + select(soong_config_variable("qtidisplay", "headless"), {
-        "true": ["-DTARGET_HEADLESS"],
+        true: ["-DTARGET_HEADLESS"],
         default: [],
     }),
     shared_libs: [

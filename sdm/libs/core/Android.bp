@@ -24,10 +24,10 @@ cc_library_shared {
         "-Wno-unused-parameter",
         "-DLOG_TAG=\"SDM\"",
     ] + select(soong_config_variable("qtidisplay", "drmpp"), {
-        "true": ["-DPP_DRM_ENABLE"],
+        true: ["-DPP_DRM_ENABLE"],
         default: [],
     }) + select(soong_config_variable("qtidisplay", "headless"), {
-        "true": ["-DTARGET_HEADLESS"],
+        true: ["-DTARGET_HEADLESS"],
         default: [],
     }),
     shared_libs: [
@@ -61,7 +61,7 @@ cc_library_shared {
         "fb/hw_scale.cpp",
         "fb/hw_events.cpp",
     ] + select(soong_config_variable("qtidisplay", "headless"), {
-        "true": [],
+        true: [],
         default: [
             "drm/hw_info_drm.cpp",
             "drm/hw_device_drm.cpp",
